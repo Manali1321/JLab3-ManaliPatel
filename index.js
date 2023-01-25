@@ -14,6 +14,7 @@ const port = process.env.PORT || 8888;
 //define important folders
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
+
 //setup public folder
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -31,7 +32,9 @@ app.use(express.json());
     path: "/about"
   }
 ];*/
+
 //PAGE ROUTES
+// controller function- 2nd argument of get function
 app.get("/", async (request, response) => {
   links = await getLinks();
   response.render("index", { title: "Home", menu: links });
@@ -49,9 +52,8 @@ app.get("/admin/menu/add", async (request, response) => {
   response.render("menu-add", { title: "Add menu link", menu: links });
 });
 app.get("/admin/menu/edit", async (request, response) => {
-  links = await getLinks();
-  editLinkData = await getSingleLink(request.query.linkId);
-
+  const links = await getLinks();
+  const editLinkData = await getSingleLink(request.query.linkId);
   response.render("menu-edit", { title: "Edit menu link", menu: links, editLink: editLinkData });
 });
 
@@ -59,6 +61,8 @@ app.get("/admin/menu/edit", async (request, response) => {
 app.post("/admin/menu/add/submit", async (request, response) => {
   //for a POST form, the data is retrieved through the body
   //request.body.<field_name>
+
+  console.log(request.body)
   let newLink = {
     weight: request.body.weight,
     path: request.body.path,
@@ -73,8 +77,13 @@ app.get("/admin/menu/delete", async (request, response) => {
   await deleteLink(request.query.linkId);
   response.redirect("/admin/menu");
 });
+
 app.post("/admin/menu/edit/submit", async (request, response) => {
+
   //get the id
+  const id = databse.collection('_id')
+  // const query = { id }
+
 
   //get the weight/path/name values from the form and use for a document to update
   let link = {
@@ -83,15 +92,18 @@ app.post("/admin/menu/edit/submit", async (request, response) => {
     name: FORM_VALUE
   };
 
-  //run editLink()
+  // run editLink()
+  await editLink(request.query.linkId);
 
   response.redirect("/admin/menu");
 });
+
 
 //set up server listening
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
 });
+
 
 //MONGO FUNCTIONS
 /* Function to connect to DB and return the "testdb" database. */
@@ -127,7 +139,7 @@ async function getSingleLink(id) {
   db = await connection();
   const editIdFilter = { _id: new ObjectId(id) };
   const result = db.collection("menuLinks").findOne(editIdFilter);
-  console.log(result);
+  // console.log(result);
   return result;
 }
 /* Function to update a given link */

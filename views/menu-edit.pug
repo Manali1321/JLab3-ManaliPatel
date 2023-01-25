@@ -1,17 +1,16 @@
 extends layout
 
 block main-content 
-  h1.page-title Edit menu link
+  h1.page-title Edit #{editLink.name} link
   form(method="post", action="/admin/menu/edit/submit")
     input(type="hidden", name="linkId", value=editLink._id)
-
-    div 
-      -//add label/input for the weight prepopulated with the selected link's weight
-
-    div 
-      -//add label/input for the path (pre-populated)
-
-    div 
-      -//add label/input for the name (prepopulated)
-
+    div
+      label(for="wgt") Weight: 
+      input(type="number", id="wgt", name="weight", value=editLink.weight)
+    div
+      label(for="path") Path: 
+      input(type="text", id="path", name="path")
+    div
+      label(for="link-name") Name:
+      input(type="text", id="link-name", name="name", placeholder="e.g. Home")
     button(type="submit") Update link
