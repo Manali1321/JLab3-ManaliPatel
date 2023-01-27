@@ -36,19 +36,19 @@ app.use(express.json());
 //PAGE ROUTES
 // controller function- 2nd argument of get function
 app.get("/", async (request, response) => {
-  links = await getLinks();
+  const links = await getLinks();
   response.render("index", { title: "Home", menu: links });
 });
 app.get("/about", async (request, response) => {
-  links = await getLinks();
+  const links = await getLinks();
   response.render("about", { title: "About", menu: links });
 });
 app.get("/admin/menu", async (request, response) => {
-  links = await getLinks();
+  const links = await getLinks();
   response.render("menu-list", { title: "Menu links admin", menu: links });
 });
 app.get("/admin/menu/add", async (request, response) => {
-  links = await getLinks();
+  const links = await getLinks();
   response.render("menu-add", { title: "Add menu link", menu: links });
 });
 app.get("/admin/menu/edit", async (request, response) => {
@@ -61,8 +61,7 @@ app.get("/admin/menu/edit", async (request, response) => {
 app.post("/admin/menu/add/submit", async (request, response) => {
   //for a POST form, the data is retrieved through the body
   //request.body.<field_name>
-
-  console.log(request.body)
+  // console.log(request.body)
   let newLink = {
     weight: request.body.weight,
     path: request.body.path,
@@ -79,31 +78,24 @@ app.get("/admin/menu/delete", async (request, response) => {
 });
 
 app.post("/admin/menu/edit/submit", async (request, response) => {
-
   //get the id
-  const id = databse.collection('_id')
-  // const query = { id }
-
+  const id = request.body.linkId;
+  console.log(id);
 
   //get the weight/path/name values from the form and use for a document to update
-  let link = {
-    weight: FORM_VALUE,
-    path: FORM_VALUE,
-    name: FORM_VALUE
+  let updatedLink = {
+    weight: request.body.weight,
+    path: request.body.path,
+    name: request.body.name
   };
-
-  // run editLink()
-  await editLink(request.query.linkId);
-
+  await editLink(id, updatedLink);
   response.redirect("/admin/menu");
 });
-
 
 //set up server listening
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
 });
-
 
 //MONGO FUNCTIONS
 /* Function to connect to DB and return the "testdb" database. */
@@ -139,12 +131,15 @@ async function getSingleLink(id) {
   db = await connection();
   const editIdFilter = { _id: new ObjectId(id) };
   const result = db.collection("menuLinks").findOne(editIdFilter);
-  // console.log(result);
   return result;
 }
 /* Function to update a given link */
-async function editLink(id, link) {
+async function editLink(id, updatedLink) {
   db = await connection();
   //https://www.mongodb.com/docs/drivers/node/current/usage-examples/updateOne/
+  const query = { _id: new ObjectId(id) };
+
+  const result = await db.collection("menuLinks").updateOne(query, { $set: updatedLink });
+  console.log("updated added");
 
 }
